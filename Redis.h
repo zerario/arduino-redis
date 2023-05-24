@@ -104,6 +104,14 @@ public:
   RedisReturnValue authenticate(const char *password);
 
   /**
+   * Authenticate with the given username.
+   * @param password The password with which to authenticate.
+   * @param username The username with which to authenticate.
+   * @returns RedisReturnValue detailing the result
+   */
+  RedisReturnValue authenticate(const char *password, const char *username);
+
+  /**
    * Set `key` to `value`.
    * @note Current implementation only supports basic SET without behavioral
    * modification options added in Redis 2.6.12. To expire a set key, use the
@@ -120,6 +128,12 @@ public:
    * @return The key`s value as a string, null if the key does not exist.
    */
   String get(const char *key);
+
+  /**
+   * TIME.
+   * @return The redis server time as a string.
+   */
+  String time();
 
   /**
    * Delete `key`.
@@ -241,6 +255,8 @@ public:
    * @return `true` if deleted
    */
   bool hdel(const char *key, const char *field);
+
+  int rawnr(const char *cmd);
 
   /**
    * Gets the number of fields stored in hash at `key`.

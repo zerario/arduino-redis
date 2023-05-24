@@ -20,6 +20,26 @@ RedisReturnValue Redis::authenticate(const char *password)
   return RedisNotConnectedFailure;
 }
 
+RedisReturnValue Redis::authenticate(const char *password, const char *username)
+{
+  if (conn.connected())
+  {
+    int passwordLength = strlen(password);
+    int usernameLength = strlen(username);
+    if (passwordLength > 0 && usernameLength > 0)
+    {
+      auto cmdRet = RedisCommand("AUTH", ArgList{username, password}).issue(conn);
+      return cmdRet->type() == RedisObject::Type::SimpleString && (String)*cmdRet == "OK"
+                 ? RedisSuccess
+                 : RedisAuthFailure;
+    }
+
+    return RedisSuccess;
+  }
+
+  return RedisNotConnectedFailure;
+}
+
 #define TRCMD(t, c, ...) return RedisCommand(c, ArgList{__VA_ARGS__}).issue_typed<t>(conn)
 
 #define TRCMD_EXPECTOK(c, ...) return (bool)(((String)*RedisCommand(c, ArgList{__VA_ARGS__}).issue(conn)).indexOf("OK") != -1)
@@ -32,6 +52,11 @@ bool Redis::set(const char *key, const char *value)
 String Redis::get(const char *key)
 {
   TRCMD(String, "GET", key);
+}
+
+String Redis::time()
+{
+  TRCMD(String, "TIME");
 }
 
 bool Redis::del(const char *key)
@@ -97,6 +122,10 @@ int Redis::hstrlen(const char *key, const char *field)
 bool Redis::hexists(const char *key, const char *field)
 {
   TRCMD(bool, "HEXISTS", key, field);
+}
+
+int Redis::rawnr(const char *cmd) {
+  TRCMD(int, cmd);
 }
 
 std::vector<String> Redis::lrange(const char *key, int start, int stop)
